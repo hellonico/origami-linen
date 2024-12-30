@@ -59,13 +59,13 @@
 ;; App state
 (def *state
   (atom {
-         :url "http://localhost:11434"
-         :model "llama3.2"
-         :prompt ""
+         :url      "http://localhost:11434"
+         :model    "llama3.2"
+         :prompt   ""
          :question ""
-         :rows []
-         :headers []
-         :history (read-history) :selected-file nil}))
+         :rows     []
+         :headers  []
+         :history  (read-history) :selected-file nil}))
 
 ;; Load file into state
 (defn load-file [file-path]
@@ -110,13 +110,13 @@
                                      (swap! *state assoc :selected-file new-file)
                                      (load-file new-file)))
                :items            (:history state)}
-              {:fx/type :table-view
-               :columns (for [header (:headers state)]
-                          {:fx/type            :table-column
-                           :text               (name header)
-                           :cell-value-factory header})
+              {:fx/type     :table-view
+               :columns     (for [header (:headers state)]
+                              {:fx/type            :table-column
+                               :text               (name header)
+                               :cell-value-factory header})
                :v-box/vgrow :always
-               :items   (:rows state)}]}
+               :items       (:rows state)}]}
   )
 
 (defn get-prompt [question]
@@ -134,8 +134,9 @@
   )
 
 (defn right-panel [state]
-  {:fx/type :v-box
-   :spacing 10
+  {:fx/type  :v-box
+   :h-box/hgrow :always
+   :spacing  10
    :padding  10
    :children [
               {:fx/type  :h-box
@@ -175,18 +176,18 @@
               {
                :fx/type :label
                :text    "Response:"}
-              {:fx/type   :text-area
-               :wrap-text true
+              {:fx/type     :text-area
+               :wrap-text   true
                :v-box/vgrow :always
-               :text      (:response state)
-               :editable  false}]
-   })
+               :text        (:response state)
+               :editable    false}]})
 
 ;; App view
 (defn app-view [state]
   {:fx/type :stage
    :showing true
-   :title   "Pyajama Linen - Query Your Data"
+   ;:stylesheets  #{"styles.css"}
+   :title   "Pyjama Linen - Query Your Data"
    :scene   {:fx/type         :scene
              :on-drag-over    (fn [^DragEvent event]
                                 (let [db (.getDragboard event)]
@@ -195,15 +196,14 @@
                                       (.acceptTransferModes (into-array TransferMode [TransferMode/COPY]))))))
              :on-drag-dropped #(handle-drag-dropped state %)
              :root            {
-                               :fx/type :h-box
-                               :spacing 10
+                               :fx/type  :h-box
+                               :spacing  10
                                :children [
                                           (left-panel state)
                                           (right-panel state)
-
                                           ]
                                }
-}})
+             }})
 
 ;; Renderer
 (def renderer
