@@ -1,7 +1,9 @@
 (ns excel-viewer.core
   (:require [cljfx.api :as fx]
+            [clojure.core.async :as async]
             [dk.ative.docjure.spreadsheet :as ss]
             [clojure.data.csv :as csv]
+            [pyjama.state]
             [clojure.java.io :as io])
   (:import (javafx.scene.input DragEvent TransferMode)
            (org.apache.poi.ss.usermodel Cell)))
@@ -37,6 +39,15 @@
                   (rest rows))]
     {:headers headers :rows data}))
 
+(defn to-markdown [{:keys [headers rows]}]
+  (let [header-row (str "| " (clojure.string/join " | " (map name headers)) " |")
+        separator-row (str "| " (clojure.string/join " | " (repeat (count headers) "---")) " |")
+        data-rows (map (fn [row]
+                         (str "| " (clojure.string/join " | " (map #(get row % "") headers)) " |"))
+                       rows)]
+    (clojure.string/join "\n" (concat [header-row separator-row] data-rows))))
+
+
 ;; Parse CSV file
 (defn read-csv [file-path]
   (with-open [reader (io/reader file-path)]
@@ -47,7 +58,14 @@
 
 ;; App state
 (def *state
-  (atom {:rows [] :headers [] :history (read-history) :selected-file nil}))
+  (atom {
+         :url "http://localhost:11434"
+         :model "llama3.2"
+         :prompt ""
+         :question ""
+         :rows []
+         :headers []
+         :history (read-history) :selected-file nil}))
 
 ;; Load file into state
 (defn load-file [file-path]
@@ -75,38 +93,117 @@
     (when file
       (let [file-path (.getAbsolutePath file)]
         (append-to-history file-path)
-        (swap! *state update :history (fn[x] (cons file-path (remove #(= % file-path) x))))
+        (swap! *state update :history (fn [x] (cons file-path (remove #(= % file-path) x))))
         (swap! *state assoc :selected-file file-path)
         (load-file file-path)))
     (.consume event)))
+
+(defn left-panel [state]
+  {:fx/type  :v-box
+   ;:v-box/vgrow :always
+   :children [{:fx/type          :combo-box
+               :prompt-text      "Select a file..."
+               ;:vbox/vgrow :always
+               :value            (:selected-file state)
+               :on-value-changed (fn [new-file]
+                                   (when new-file
+                                     (swap! *state assoc :selected-file new-file)
+                                     (load-file new-file)))
+               :items            (:history state)}
+              {:fx/type :table-view
+               :columns (for [header (:headers state)]
+                          {:fx/type            :table-column
+                           :text               (name header)
+                           :cell-value-factory header})
+               :v-box/vgrow :always
+               :items   (:rows state)}]}
+  )
+
+(defn get-prompt [question]
+  (let [
+        prompt (str
+                 "This is a markdown formatted table of data you have for analysis:\n"
+                 (to-markdown @*state)
+                 "\n"
+                 question
+                 )
+        ]
+    ;(clojure.pprint/pprint prompt)
+    prompt
+    )
+  )
+
+(defn right-panel [state]
+  {:fx/type :v-box
+   :spacing 10
+   :padding  10
+   :children [
+              {:fx/type  :h-box
+               :spacing  10
+               :children [{:fx/type :label
+                           :text    "URL:"}
+                          {:fx/type         :text-field
+                           :text            (:url state)
+                           :on-text-changed #(do
+                                               (swap! *state assoc :url %)
+                                               (async/thread (pyjama.state/local-models *state)))}
+                          {:fx/type :label
+                           :text    "Model:"}
+                          {:fx/type          :combo-box
+                           :items            (:local-models state)
+                           :value            (:model state)
+                           :on-value-changed #(swap! *state assoc :model %)}
+                          ]}
+              {
+               :fx/type :label
+               :text    "Prompt:"}
+              {:fx/type         :text-area
+               :text            (:question state)
+               :on-text-changed #(do
+                                   (swap! *state assoc :question %)
+                                   (swap! *state assoc :prompt (get-prompt %))
+                                   )}
+              (if (not (state :processing))
+                {:fx/type   :button
+                 :text      "Ask"
+                 :on-action (fn [_] (pyjama.state/handle-submit *state))
+                 }
+                {
+                 :fx/type :label
+                 :text    "Thinking ..."}
+                )
+              {
+               :fx/type :label
+               :text    "Response:"}
+              {:fx/type   :text-area
+               :wrap-text true
+               :v-box/vgrow :always
+               :text      (:response state)
+               :editable  false}]
+   })
 
 ;; App view
 (defn app-view [state]
   {:fx/type :stage
    :showing true
-   :title "Excel & CSV Viewer"
-   :scene {:fx/type :scene
-           :on-drag-over (fn [^DragEvent event]
-                           (let [db (.getDragboard event)]
-                             (when (.hasFiles db)
-                               (doto event
-                                 (.acceptTransferModes (into-array TransferMode [TransferMode/COPY]))))))
-           :on-drag-dropped #(handle-drag-dropped state %)
-           :root {:fx/type :v-box
-                  :children [{:fx/type :combo-box
-                              :prompt-text "Select a file..."
-                              :value (:selected-file state)
-                              :on-value-changed (fn [new-file]
-                                                  (when new-file
-                                                    (swap! *state assoc :selected-file new-file)
-                                                    (load-file new-file)))
-                              :items (:history state)}
-                             {:fx/type :table-view
-                              :columns (for [header (:headers state)]
-                                         {:fx/type :table-column
-                                          :text (name header)
-                                          :cell-value-factory header})
-                              :items (:rows state)}]}}})
+   :title   "Pyajama Linen - Query Your Data"
+   :scene   {:fx/type         :scene
+             :on-drag-over    (fn [^DragEvent event]
+                                (let [db (.getDragboard event)]
+                                  (when (.hasFiles db)
+                                    (doto event
+                                      (.acceptTransferModes (into-array TransferMode [TransferMode/COPY]))))))
+             :on-drag-dropped #(handle-drag-dropped state %)
+             :root            {
+                               :fx/type :h-box
+                               :spacing 10
+                               :children [
+                                          (left-panel state)
+                                          (right-panel state)
+
+                                          ]
+                               }
+}})
 
 ;; Renderer
 (def renderer
@@ -115,4 +212,5 @@
     :opts {:state *state}))
 
 (defn -main []
+  (async/thread (pyjama.state/local-models *state))
   (fx/mount-renderer *state renderer))
