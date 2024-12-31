@@ -1,4 +1,5 @@
-(ns excel-viewer.core
+(ns linen.core
+  (:gen-class)
   (:require [cljfx.api :as fx]
             [clojure.core.async :as async]
             [dk.ative.docjure.spreadsheet :as ss]
@@ -186,9 +187,9 @@
 (defn app-view [state]
   {:fx/type :stage
    :showing true
-   ;:stylesheets  #{"styles.css"}
    :title   "Pyjama Linen - Query Your Data"
    :scene   {:fx/type         :scene
+             :stylesheets  #{"styles.css"}
              :on-drag-over    (fn [^DragEvent event]
                                 (let [db (.getDragboard event)]
                                   (when (.hasFiles db)

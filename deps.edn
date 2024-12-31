@@ -9,5 +9,10 @@
         }
 
  :aliases
- {:run {:main-opts ["-m" "excel-table-preview"] ; Replace with your main namespace
-        :jvm-opts ["--add-modules" "javafx.controls"]}}}
+ {
+  :build
+  {:deps {io.github.clojure/tools.build {:git/tag "v0.10.6" :git/sha "52cf7d6"}} :ns-default build}
+  }
+  ;:run {:main-opts ["-m" "excel-table-preview"] ; Replace with your main namespace
+  ;      :jvm-opts ["--add-modules" "javafx.controls"]}}
+ }
