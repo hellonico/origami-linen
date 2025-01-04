@@ -108,6 +108,13 @@
   {:fx/type
    :image-view
    :v-box/vgrow :always
+   ;:fit-width (:fx/bind (fn [node] (* 0.5 (double (.getWidth (.getParent node))))))
+   ;:fit-width (fn [node]
+   ;             (let [parent (.getParent node)]
+   ;               (if parent
+   ;                 (* 0.5 (double (.getWidth parent)))
+   ;                 500
+   ;                 )))
    :image
    (Image. (io/input-stream (first (:images @state))))})
 
@@ -158,6 +165,9 @@
 (defmethod handle-file-action [:suggest :image] [_ _]
   ["Find text in the image."
    "Describe the image."
+   "How many colors are in the image"
+   "Is it a high resolution image."
+   "what is the main season of the image."
    ]
   )
 

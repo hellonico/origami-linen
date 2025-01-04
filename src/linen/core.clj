@@ -115,7 +115,7 @@
                                             :children [
 
                                                        {:fx/type :label
-                                                        :text    (:format-file @*state)}
+                                                        :text    (.getName (io/as-file (:format-file @*state)))}
                                                        {:fx/type :label
                                                         :on-mouse-clicked (fn[_]
                                                                             (swap! *state assoc
