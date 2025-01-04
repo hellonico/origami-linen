@@ -2,12 +2,12 @@
   (:gen-class)
   (:require [cljfx.api :as fx]
             [clojure.core.async :as async]
-            [dk.ative.docjure.spreadsheet :as ss]
             [clojure.data.csv :as csv]
-            [pyjama.state]
-            [clojure.java.io :as io])
-  (:import (javafx.scene.image Image)
-           (javafx.scene.input DragEvent TransferMode)
+            [clojure.java.io :as io]
+            [dk.ative.docjure.spreadsheet :as ss]
+            [linen.handlers]
+            [pyjama.state])
+  (:import (javafx.scene.input DragEvent TransferMode)
            (org.apache.poi.ss.usermodel Cell)))
 
 
@@ -38,116 +38,6 @@
          :headers  []
          :history  (read-history) :selected-file nil}))
 
-(defn to-markdown [{:keys [headers rows]}]
-  ;(println rows)
-  (let [header-row (str "| " (clojure.string/join " | " (map name headers)) " |")
-        separator-row (str "| " (clojure.string/join " | " (repeat (count headers) "---")) " |")
-        data-rows (map (fn [row]
-                         (str "| " (clojure.string/join " | " (map #(get row % "") headers)) " |"))
-                       rows)]
-
-    (clojure.string/join "\n" (concat [header-row separator-row] data-rows))))
-
-
-(defn get-prompt []
-  (let [
-        file-type (:selected-file @*state)
-        question (:question @*state)
-        prompt (cond
-
-                 (or
-                   (.endsWith file-type ".png")
-                   (.endsWith file-type ".jpg"))
-                 (str
-                   "Look at the image attached. \n"
-                   question
-                   )
-
-                 (or
-                   (.endsWith file-type ".csv")
-                   (.endsWith file-type ".xlsx"))
-                 (str
-                 "This is a markdown formatted table of data you have for analysis:\n"
-                 (to-markdown @*state)
-                 "\n"
-                 question
-                 )
-
-                 (or
-                   (.endsWith file-type ".md")
-                   (.endsWith file-type ".txt"))
-
-                   (str
-                     "This is a text:\n"
-                     (slurp file-type)
-                     "\n"
-                     question
-                     ))
-
-        ]
-    prompt
-    )
-  )
-
-
-;; Parse Excel file
-(defn read-excel [file-path]
-  (let [workbook (ss/load-workbook file-path)
-        ; TODO: support for other sheets than Sheet1 of course
-        sheet (ss/select-sheet "Sheet1" workbook)
-        rows (ss/row-seq sheet)
-        headers (map #(-> % .getStringCellValue keyword)
-                     (filter #(instance? Cell %)
-                             (ss/cell-seq (first rows))))
-        data (map (fn [row]
-                    (zipmap headers (map #(when (instance? Cell %)
-                                            (try
-                                              (.toString %)
-                                                 (catch Exception _ nil)))
-                                         (ss/cell-seq row))))
-                  (rest rows))]
-    {:headers headers :rows data}))
-
-
-;; Parse CSV file
-(defn read-csv [file-path]
-  (with-open [reader (io/reader file-path)]
-    (let [lines (doall (csv/read-csv reader))
-          headers (map keyword (first lines))
-          rows (map #(zipmap headers %) (rest lines))]
-      {:headers headers :rows rows})))
-
-
-;; Load file into state
-(defn load-file [file-path]
-  (try
-    (let [file-name (.getName (io/file file-path))]
-      (cond
-        (.endsWith file-name ".xlsx")
-        (let [excel-data (read-excel file-path)]
-          (swap! *state assoc
-                 :headers (:headers excel-data)
-                 :rows (:rows excel-data)))
-
-        (.endsWith file-name ".csv")
-        (let [csv-data (read-csv file-path)]
-          (swap! *state assoc
-                 :headers (:headers csv-data)
-                 :rows (:rows csv-data)))
-
-        (or (.endsWith file-name ".png")
-            (.endsWith file-name ".jpg"))
-            (swap! *state assoc :images [file-path])
-
-        :else
-        (println "Unsupported file type:" file-name))
-      (swap! *state assoc :prompt (get-prompt))
-      )
-    (catch Exception e
-      (.printStackTrace e)
-      (println "Failed to load file:" (.getMessage e)))))
-
-;; Handle drag-and-drop events
 (defn handle-drag-dropped [_state event]
   (let [db (.getDragboard event)
         files (.getFiles db)
@@ -157,54 +47,24 @@
         (append-to-history file-path)
         (swap! *state update :history (fn [x] (cons file-path (remove #(= % file-path) x))))
         (swap! *state assoc :selected-file file-path)
-        (load-file file-path)))
+        (linen.handlers/handle-file-action :load *state)
+        ;(load-file file-path)
+        ))
     (.consume event)))
 
 (defn left-panel [state]
   {:fx/type  :v-box
-   ;:v-box/vgrow :always
+   ;:vbox/vgrow :always
    :children [{:fx/type          :combo-box
                :prompt-text      "Select a file..."
-               ;:vbox/vgrow :always
                :value            (:selected-file state)
                :on-value-changed (fn [new-file]
                                    (when new-file
-                                     (swap! *state assoc :selected-file new-file)
-                                     (load-file new-file)))
+                                     (swap! *state assoc :images [] :selected-file new-file)
+                                     (linen.handlers/handle-file-action :load *state)))
                :items            (:history state)}
 
-              (cond
-                (nil? (:selected-file state))
-                {:fx/type     :text-area
-                 ;:text            (slurp (:selected-file state))
-                 :v-box/vgrow :always}
-                (or
-                  (.endsWith (:selected-file state) ".xlsx")
-                  (.endsWith (:selected-file state) ".csv"))
-              {:fx/type     :table-view
-               :columns     (for [header (:headers state)]
-                              {:fx/type            :table-column
-                               :text               (name header)
-                               :cell-value-factory header})
-               :v-box/vgrow :always
-               :items       (:rows state)}
-
-                (or
-                  (.endsWith (:selected-file state) ".png")
-                  (.endsWith (:selected-file state) ".jpg"))
-
-                {:fx/type
-                 :image-view
-                 :v-box/vgrow :always
-                 :image
-                 (Image. (io/input-stream (first (:images state))))}
-
-                (or
-                  (.endsWith (:selected-file state) ".txt")
-                  (.endsWith (:selected-file state) ".md"))
-                 {:fx/type     :text-area
-                  :text        (slurp (:selected-file state))
-                  :v-box/vgrow :always})
+              (linen.handlers/handle-file-action :preview *state)
               ]}
   )
 
@@ -230,6 +90,14 @@
                               :value            (:model state)
                               :on-value-changed #(swap! *state assoc :model %)}
                              ]}
+                 {:fx/type          :combo-box
+                  :items            (linen.handlers/handle-file-action :suggest *state)
+                  :value            ""                      ;(:model state)
+                  :on-value-changed #(do
+                                       (swap! *state assoc :question %)
+                                       (swap! *state assoc :prompt (linen.handlers/handle-file-action :prompt *state))
+                                       (pyjama.state/handle-submit *state)
+                                       )}
                  {
                   :fx/type :label
                   :text    "Prompt:"}
@@ -237,25 +105,24 @@
                   :text            (:question state)
                   :on-text-changed #(do
                                       (swap! *state assoc :question %)
-                                      (swap! *state assoc :prompt (get-prompt))
-                                      )}
+                                      (swap! *state assoc :prompt (linen.handlers/handle-file-action :prompt *state)))}
                  (if (not (state :processing))
                    {:fx/type   :button
-                 :text      "Ask"
-                 :on-action (fn [_] (pyjama.state/handle-submit *state))
-                 }
-                {
-                 :fx/type :label
-                 :text    "Thinking ..."}
-                )
-              {
-               :fx/type :label
-               :text    "Response:"}
-              {:fx/type     :text-area
-               :wrap-text   true
-               :v-box/vgrow :always
-               :text        (:response state)
-               :editable    false}]})
+                    :text      "Ask"
+                    :on-action (fn [_] (pyjama.state/handle-submit *state))
+                    }
+                   {
+                    :fx/type :label
+                    :text    "Thinking ..."}
+                   )
+                 {
+                  :fx/type :label
+                  :text    "Response:"}
+                 {:fx/type     :text-area
+                  :wrap-text   true
+                  :v-box/vgrow :always
+                  :text        (:response state)
+                  :editable    false}]})
 
 ;; App view
 (defn app-view [state]
@@ -263,7 +130,7 @@
    :showing true
    :title   "Pyjama Linen - Query Your Data"
    :scene   {:fx/type         :scene
-             :stylesheets  #{"styles.css"}
+             :stylesheets     #{"styles.css"}
              :on-drag-over    (fn [^DragEvent event]
                                 (let [db (.getDragboard event)]
                                   (when (.hasFiles db)
@@ -280,7 +147,6 @@
                                }
              }})
 
-;; Renderer
 (def renderer
   (fx/create-renderer
     :middleware (fx/wrap-map-desc assoc :fx/type app-view)
