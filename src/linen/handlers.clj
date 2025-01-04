@@ -107,7 +107,9 @@
 (defmethod handle-file-action [:preview :image] [_ state]
   {:fx/type
    :image-view
-   :v-box/vgrow :always
+   :fit-width 500.0
+   :preserve-ratio true
+   ;:v-box/vgrow :always
    ;:fit-width (:fx/bind (fn [node] (* 0.5 (double (.getWidth (.getParent node))))))
    ;:fit-width (fn [node]
    ;             (let [parent (.getParent node)]

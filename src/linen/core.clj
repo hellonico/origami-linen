@@ -75,6 +75,7 @@
 (defn right-panel [state]
   {:fx/type     :v-box
    :h-box/hgrow :always
+   :min-width 400.0
    :spacing     5
    :padding     5
    :children    [
