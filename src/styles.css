@@ -13,14 +13,15 @@ Label {
     -fx-border-width: 0 0 4 0;
 }
 .text-input:focused {
-    -fx-border-color: #f9a527;
+    -fx-border-color: #2196f3
 }
 
 * {
-    -fx-font-family: monospace;
-    -fx-padding: 6;
+    /*-fx-font-family: monospace;*/
+    -fx-font-size: 11px;
+    /*-fx-padding: 6;*/
 }
 .root {
-    -fx-padding: 10;
+    /*-fx-padding: 10;*/
     -fx-background-radius: 10;
 }

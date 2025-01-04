@@ -1,5 +1,5 @@
 {
- :paths ["src"]
+ :paths ["src" "resources"]
  :deps {org.clojure/clojure {:mvn/version "1.11.1"} ; Adjust to the desired Clojure version
         cljfx/cljfx {:mvn/version "1.9.3"} ; Latest Cljfx version
         dk.ative/docjure   {:mvn/version "1.14.0"} ; Library for Excel file handling

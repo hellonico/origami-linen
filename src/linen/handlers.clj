@@ -10,6 +10,7 @@
     (#{:xlsx :xls :csv} ext) :table
     (#{:png :jpg} ext) :image
     (#{:txt :log :md} ext) :text
+    (#{:clj :py :go :rs} ext) :code
     :else :unknown))
 
 (defmulti handle-file-action
@@ -130,8 +131,24 @@
    :text        (slurp (:selected-file @state))
    :v-box/vgrow :always})
 
+(defmethod handle-file-action [:preview :code] [_ state]
+  {:fx/type     :text-area
+   :text        (slurp (:selected-file @state))
+   :v-box/vgrow :always})
+
+(defmethod handle-file-action [:load :code] [_ state]
+  (println "Loading code file" (:selected-file @state)))
+
+(defmethod handle-file-action [:prompt :code] [_ state]
+  (str
+    "This is a code file:\n"
+    (slurp (:selected-file @state))
+    "\n"
+    (:question @state)))
+
 (defmethod handle-file-action [:suggest :table] [_ _]
   ["Describe the data"
+   "Analyse the data"
    "Find some trends"
    "What are good prompts for this data set."
    ]
@@ -147,5 +164,14 @@
   ["Summarize."
    "Ask 3 pertinent questions on the text."
    "Reword for a teenager."
+   "Find grammatical errors in the text."
+   ]
+  )
+
+(defmethod handle-file-action [:suggest :code] [_ _]
+  ["Simplify the code."
+   "What is the code doing."
+   "Find obvious errors."
+   "Shorten the code as much as possible."
    ]
   )
