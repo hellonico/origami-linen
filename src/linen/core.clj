@@ -4,6 +4,7 @@
             [clojure.core.async :as async]
             [clojure.java.io :as io]
             [linen.handlers]
+            [cheshire.core :as cheshire]
             [linen.history :as h]
             [pyjama.state])
   (:import (javafx.scene.image Image)
@@ -34,6 +35,12 @@
 
 (defn left-panel [state]
   {:fx/type  :v-box
+   :on-drag-over    (fn [^DragEvent event]
+                      (let [db (.getDragboard event)]
+                        (when (.hasFiles db)
+                          (doto event
+                            (.acceptTransferModes (into-array TransferMode [TransferMode/COPY]))))))
+   :on-drag-dropped #(handle-drag-dropped state %)
    :children [{:fx/type          :combo-box
                :prompt-text      "Select a file..."
                :value            (:selected-file state)
@@ -42,10 +49,28 @@
                                      (swap! *state assoc :images [] :selected-file new-file)
                                      (linen.handlers/handle-file-action :load *state)))
                :items            (:history state)}
-
               (linen.handlers/handle-file-action :preview *state)
               ]}
   )
+
+(defn handle-drag-dropped-format [_ event]
+  (let [db (.getDragboard event)
+        files (.getFiles db)
+        file (.getAbsolutePath (first files))
+        content (read-string (slurp file))
+        ]
+  (swap! *state assoc
+         :format-file file
+         :format content
+         )
+  ))
+; TODO: does not work for now
+;
+;(defn pretty-print-json [json-str]
+;  "Pretty prints a JSON string using Cheshire."
+;  (let [parsed-json (cheshire/parse-string json-str true)]  ; Parse JSON into a Clojure map
+;    (cheshire/generate-string parsed-json {:pretty true})))  ; Pretty-print the map back into JSON
+
 
 (defn right-panel [state]
   {:fx/type     :v-box
@@ -75,6 +100,37 @@
                  {:fx/type :h-box
                   :spacing  10
                   :children [
+                             {:fx/type  :h-box
+                              :on-drag-over    (fn [^DragEvent event]
+                                                 (let [db (.getDragboard event)]
+                                                   (when (.hasFiles db)
+                                                     (doto event
+                                                       (.acceptTransferModes (into-array TransferMode [TransferMode/COPY]))))))
+                              :on-drag-dropped #(handle-drag-dropped-format *state %)
+                              :children [
+                                         {:fx/type :label
+                                          :text    "Format:"}
+                                         (if (not (nil? (:format-file @*state)))
+                                           {:fx/type  :h-box
+                                            :children [
+
+                                                       {:fx/type :label
+                                                        :text    (:format-file @*state)}
+                                                       {:fx/type :label
+                                                        :on-mouse-clicked (fn[_]
+                                                                            (swap! *state assoc
+                                                                                  :format-file nil
+                                                                                  :format nil
+                                                                                  ))
+                                                        :text    " ❌ "}
+                                                       ]
+                                            }
+                                           {:fx/type :label
+                                            :text    "Free format. (Drag an edn file to enforce output.)"}
+                                           )
+
+                                         ]
+                              }
                              {:fx/type :label
                               :text    "Suggested Prompts:"}
                              {:fx/type          :combo-box
@@ -109,10 +165,13 @@
                  {:fx/type     :text-area
                   :wrap-text   true
                   :v-box/vgrow :always
-                  :text        (:response state)
+                  :text
+                  ; TODO: format the code even when streaming
+                  ;(if (:format state)
+                  ;               (pretty-print-json (:response state))
+                                 (:response state)
                   :editable    false}]})
 
-;; App view
 (defn app-view [state]
   {:fx/type :stage
    :showing true
@@ -121,12 +180,6 @@
    :icons   [(Image. (io/input-stream (io/resource "delicious.png")))]
    :scene {:fx/type         :scene
            :stylesheets     #{"styles.css"}
-           :on-drag-over    (fn [^DragEvent event]
-                              (let [db (.getDragboard event)]
-                                (when (.hasFiles db)
-                                  (doto event
-                                    (.acceptTransferModes (into-array TransferMode [TransferMode/COPY]))))))
-           :on-drag-dropped #(handle-drag-dropped state %)
            :root            {
                              :fx/type  :h-box
                              :spacing  10

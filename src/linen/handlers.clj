@@ -33,8 +33,9 @@
 
 (defn read-excel [file-path]
   (let [workbook (ss/load-workbook file-path)
-        ; TODO: support for other sheets than Sheet1 of course
-        sheet (ss/select-sheet "Sheet1" workbook)
+        ; TODO: support for other sheets than the first one
+        ;sheet (ss/select-sheet "Sheet1" workbook)
+        sheet (first (ss/sheet-seq workbook))
         rows (ss/row-seq sheet)
         headers (map #(-> % .getStringCellValue keyword)
                      (filter #(instance? Cell %)
