@@ -29,7 +29,13 @@
 
 (defmethod handle-file-action [:load :no-file] [_ _])
 
-(defmethod handle-file-action [:suggest :no-file] [_ _] [])
+(defmethod handle-file-action [:suggest :no-file] [_ _]
+  ["biggest waterfalls in the world"
+   "best books by Haruki Murakami"
+   ;"日本の首相、ラスト１０人のを教えてください"
+   "Say hello in 10 different languages"
+   ]
+  )
 
 (defn read-excel [file-path]
   (let [workbook (ss/load-workbook file-path)
@@ -110,7 +116,7 @@
    :fit-width 500.0
    :preserve-ratio true
    ;:v-box/vgrow :always
-   ;:fit-width (:fx/bind (fn [node] (* 0.5 (double (.getWidth (.getParent node))))))
+   ;:fit-width (:fx/bind (fn [node] (* 0.5 (double (.getWidth (.getParent (.getParent node)))))))
    ;:fit-width (fn [node]
    ;             (let [parent (.getParent node)]
    ;               (if parent
@@ -128,6 +134,9 @@
 
 (defmethod handle-file-action [:load :text] [_ state]
   (println "Loading text file" (:selected-file @state)))
+
+(defmethod handle-file-action [:prompt :no-file] [_ state]
+    (:question @state))
 
 (defmethod handle-file-action [:prompt :text] [_ state]
   (str

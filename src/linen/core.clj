@@ -74,7 +74,7 @@
 
 (defn right-panel [state]
   {:fx/type     :v-box
-   :h-box/hgrow :always
+   ;:h-box/hgrow :always
    :min-width 400.0
    :spacing     5
    :padding     5
@@ -181,14 +181,20 @@
    :icons   [(Image. (io/input-stream (io/resource "delicious.png")))]
    :scene {:fx/type         :scene
            :stylesheets     #{"styles.css"}
-           :root            {
-                             :fx/type  :h-box
-                             :spacing  10
-                             :children [
-                                        (left-panel state)
-                                        (right-panel state)
-                                        ]
-                             }
+           :root
+           ;{
+           ;                  :fx/type  :h-box
+           ;                  :spacing  10
+           ;                  :children [
+           ;                             (left-panel state)
+           ;                             (right-panel state)
+           ;                             ]
+           ;                  }
+           {:fx/type :split-pane
+            :divider-positions [0.5] ;; Initial position (50% split)
+            :orientation :horizontal ;; Horizontal split
+            :items [(left-panel state) (right-panel state)]
+            }
            }})
 
 (def renderer
