@@ -1,10 +1,13 @@
 (ns build
-  (:require [clojure.tools.build.api :as b]))
+  (:require
+    [clojure.java.io :as io]
+    [clojure.java.shell :as shell]
+    [clojure.tools.build.api :as b]))
 
-;(def lib 'waves-cli)
+(def app-name "linen")
 (def version (format "1.0.%s" (b/git-count-revs nil)))
 (def class-dir "target/classes")
-;(def uber-file (format "target/%s-%s-standalone.jar" (name lib) version))
+(def uber-file (format "target/%s-%s.jar" app-name version))
 
 ;; delay to defer side effects (artifact downloads)
 (def basis (delay (b/create-basis {:project "deps.edn"})))
@@ -13,9 +16,6 @@
       (b/delete {:path "target"}))
 
 (defn uberize [compile main]
-      (let [uber-file
-            (format "target/%s-%s.jar" (name main) version)
-            ]
            (clean nil)
            (b/copy-dir {:src-dirs ["src" "resources"]
                         :target-dir class-dir})
@@ -26,7 +26,18 @@
                     :uber-file uber-file
                     :basis @basis
                     :main main})
-           ))
+           )
+
+
+(defn jpackage [_]
+      (shell/sh "jpackage"
+                "--dest" "output"
+                "--name" "linen"
+                "--input" (.getParent (io/as-file uber-file))
+                "--java-options" "-Xmx2048m"
+                "--main-jar" (.getName (io/as-file uber-file))
+                "--icon" "flax-seeds-96.icns"
+                "--app-version" version))
 
 (defn uber-linen [_]
       (uberize '[linen.core] 'linen.core))
