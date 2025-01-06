@@ -1,2 +1,2 @@
 
-![origami-linen.png](origami-linen.png)
+![origami-linen.png](docs/maincolors.jpg)

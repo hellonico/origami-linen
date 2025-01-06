@@ -8,7 +8,7 @@
 (defn extension-group [ext]
   (cond
     (#{:xlsx :xls :csv} ext) :table
-    (#{:png :jpg} ext) :image
+    (#{:png :jpg :jpeg} ext) :image
     (#{:txt :log :md} ext) :text
     (#{:clj :py :go :rs} ext) :code
     :else :unknown))
