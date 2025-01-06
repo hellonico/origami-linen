@@ -111,20 +111,25 @@
   (swap! state assoc :images [(:selected-file @state)]))
 
 (defmethod handle-file-action [:preview :image] [_ state]
-  {:fx/type
-   :image-view
-   :fit-width 500.0
-   :preserve-ratio true
-   ;:v-box/vgrow :always
-   ;:fit-width (:fx/bind (fn [node] (* 0.5 (double (.getWidth (.getParent (.getParent node)))))))
-   ;:fit-width (fn [node]
-   ;             (let [parent (.getParent node)]
-   ;               (if parent
-   ;                 (* 0.5 (double (.getWidth parent)))
-   ;                 500
-   ;                 )))
-   :image
-   (Image. (io/input-stream (first (:images @state))))})
+  {:fx/type :stack-pane
+   :children [{:fx/type :image-view
+               :fit-width 500.0
+               :preserve-ratio true
+               :image (Image. (io/input-stream (first (:images @state))))}]})
+;{:fx/type
+  ; :image-view
+  ; :fit-width 500.0
+  ; :preserve-ratio true
+  ; ;:v-box/vgrow :always
+  ; ;:fit-width (:fx/bind (fn [node] (* 0.5 (double (.getWidth (.getParent (.getParent node)))))))
+  ; ;:fit-width (fn [node]
+  ; ;             (let [parent (.getParent node)]
+  ; ;               (if parent
+  ; ;                 (* 0.5 (double (.getWidth parent)))
+  ; ;                 500
+  ; ;                 )))
+  ; :image
+  ; (Image. (io/input-stream (first (:images @state))))})
 
 
 (defmethod handle-file-action [:prompt :image] [_ state]
