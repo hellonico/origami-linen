@@ -47,6 +47,7 @@
                       :value            (:selected-file state)
                       :on-value-changed (fn [new-file]
                                           (when new-file
+                                            (swap! *state assoc :selected-file new-file)
                                             (swap! *state assoc :images [] :selected-file new-file)
                                             (linen.handlers/handle-file-action :load *state)))
                       :items            (:history state)}
@@ -141,6 +142,7 @@
                              :on-value-changed #(do
                                                   (swap! *state assoc :question %)
                                                   (swap! *state assoc :prompt (linen.handlers/handle-file-action :prompt *state))
+                                                  (clojure.pprint/pprint @*state)
                                                   (pyjama.state/handle-submit *state))}]
                 }
 

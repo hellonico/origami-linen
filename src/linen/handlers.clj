@@ -23,9 +23,19 @@
 (defmethod handle-file-action [:load :unknown] [_ state]
   (println "Unknown file type" (:selected-file @state)))
 
-(defmethod handle-file-action [:preview :no-file] [_ _]
-  {:fx/type     :text-area
-   :v-box/vgrow :always})
+(defmethod handle-file-action [:preview :no-file] [_ state]
+  {:fx/type          :text-area
+   :v-box/vgrow      :always
+   :on-text-changed #(swap! state assoc :freetext %)
+   }
+  )
+
+
+(defmethod handle-file-action [:prompt :no-file] [_ state]
+  (str
+    (:freetext @state)
+    "\n\n"
+    (:question @state)))
 
 (defmethod handle-file-action [:load :no-file] [_ _])
 
@@ -140,9 +150,6 @@
 (defmethod handle-file-action [:load :text] [_ state]
   (println "Loading text file" (:selected-file @state)))
 
-(defmethod handle-file-action [:prompt :no-file] [_ state]
-    (:question @state))
-
 (defmethod handle-file-action [:prompt :text] [_ state]
   (str
     "This is a text:\n"
@@ -182,8 +189,12 @@
   ["Find text in the image."
    "Describe the image."
    "What are the 3 main colors of the image"
-   "Is it a high resolution image."
+   "create a short poem based on the picture"
+   "what kind of atmosphere is represented in the picture."
    "what is the main season of the image."
+   "describe the colors and lighting in the photo"
+   "Are there any distinctive landmarks visible in the background"
+   "describe the overall mood or atmosphere portrayed by this image"
    ]
   )
 
