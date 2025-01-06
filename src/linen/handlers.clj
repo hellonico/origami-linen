@@ -181,7 +181,7 @@
 (defmethod handle-file-action [:suggest :image] [_ _]
   ["Find text in the image."
    "Describe the image."
-   "How many colors are in the image"
+   "What are the 3 main colors of the image"
    "Is it a high resolution image."
    "what is the main season of the image."
    ]

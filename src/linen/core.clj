@@ -157,9 +157,18 @@
                   :text      "Ask"
                   :on-action (fn [_] (pyjama.state/handle-submit *state))
                   }
-                 {
-                  :fx/type :label
-                  :text    (str (:model @*state) " is thinking ...")}
+                 {:fx/type   :h-box
+                  :alignment :center
+                  :children  [
+                              {
+                               :fx/type :label
+                               :text    (str (:model @*state) " is thinking ...")}
+                              {:fx/type   :button
+                               :text      "Stop"
+                               :on-action (fn [_] (swap! *state assoc :processing false))
+                               }
+                              ]
+                  }
                  )
                {
                 :fx/type :label

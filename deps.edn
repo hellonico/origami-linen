@@ -5,7 +5,7 @@
         dk.ative/docjure   {:mvn/version "1.14.0"} ; Library for Excel file handling
         org.clojure/data.csv {:mvn/version "1.1.0"}
         io.github.mkpaz/atlantafx-base {:mvn/version "2.0.1"}
-        hellonico/pyjama {:git/url "https://github.com/hellonico/pyjama.git" :git/sha "0070c016a519e1c138be5031851b581016c38160"}
+        hellonico/pyjama {:git/url "https://github.com/hellonico/pyjama.git" :git/sha "50ce0f5ba7f86c6027f106d8642613e469b906ad"}
         ;org.openjfx/javafx {:mvn/version "20.0.2"} ; JavaFX runtime
         }
 
