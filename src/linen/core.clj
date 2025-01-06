@@ -5,6 +5,7 @@
             [clojure.java.io :as io]
             [linen.handlers]
             [linen.history :as h]
+            [linen.utils]
             [pyjama.state])
   (:import (atlantafx.base.theme NordLight)
            (javafx.scene.image Image)
@@ -29,7 +30,10 @@
       (let [file-path (.getAbsolutePath file)]
         (h/append-to-history file-path)
         (swap! *state update :history (fn [x] (cons file-path (remove #(= % file-path) x))))
-        (swap! *state assoc :selected-file file-path)
+        (swap! *state assoc
+               :images []
+               :selected-file file-path
+               :freetext nil)
         (linen.handlers/handle-file-action :load *state)))
     (.consume event)))
 
@@ -41,18 +45,37 @@
                           (doto event
                             (.acceptTransferModes (into-array TransferMode [TransferMode/COPY]))))))
    :on-drag-dropped #(handle-drag-dropped state %)
-   :children        [{:fx/type          :combo-box
-                      :prompt-text      "Select a file..."
-                      :max-width        Double/MAX_VALUE
-                      :value            (:selected-file state)
-                      :on-value-changed (fn [new-file]
-                                          (when new-file
-                                            (swap! *state assoc :selected-file new-file)
-                                            (swap! *state assoc :images [] :selected-file new-file)
-                                            (linen.handlers/handle-file-action :load *state)))
-                      :items            (:history state)}
+   :children        [
+                     {:fx/type   :h-box
+                      :alignment :center-left
+                      :children  [
+                                  {:fx/type          :combo-box
+                                   :prompt-text      "Select a file..."
+                                   :max-width        Double/MAX_VALUE
+                                   :value            (:selected-file state)
+                                   :on-value-changed (fn [new-file]
+                                                       (when new-file
+                                                         (swap! *state assoc :freetext nil :images [] :selected-file new-file)
+                                                         (linen.handlers/handle-file-action :load *state)))
+                                   :items            (:history state)}
+
+                                  (if (not (nil? (:selected-file @*state)))
+                                    {:fx/type          :image-view
+                                     :fit-height       18.0
+                                     :fit-width        18.0
+                                     :preserve-ratio   true
+                                     :image            (Image. (io/input-stream (io/resource "close-40.png")))
+                                     :on-mouse-clicked (fn [_]
+                                                         (swap! *state assoc
+                                                                :selected-file nil
+                                                                ))
+                                     }
+                                    {:fx/type :label}
+                                    )
+                                  ]}
                      (linen.handlers/handle-file-action :preview *state)
-                     ]}
+                     ]
+   }
   )
 
 (defn handle-drag-dropped-format [_ event]
@@ -83,7 +106,7 @@
    :children  [
                {:fx/type   :h-box
                 :spacing   5
-                :alignment :center
+                :alignment :center-left
                 :children  [{:fx/type :label
                              :text    "URL:"}
                             {:fx/type         :text-field
@@ -101,7 +124,7 @@
                             ]
                 }
                {:fx/type         :h-box
-                :alignment       :center
+                :alignment       :center-left
                 :on-drag-over    (fn [^DragEvent event]
                                    (let [db (.getDragboard event)]
                                      (when (.hasFiles db)
@@ -117,13 +140,17 @@
 
                                                 {:fx/type :label
                                                  :text    (.getName (io/as-file (:format-file @*state)))}
-                                                {:fx/type          :label
+                                                {:fx/type          :image-view
+                                                 :fit-height       18.0
+                                                 :fit-width        18.0
+                                                 :preserve-ratio   true
+                                                 :image            (Image. (io/input-stream (io/resource "close-40.png")))
                                                  :on-mouse-clicked (fn [_]
                                                                      (swap! *state assoc
                                                                             :format-file nil
                                                                             :format nil
                                                                             ))
-                                                 :text             " ❌ "}
+                                                 }
                                                 ]
                                      }
                                     {:fx/type :label
@@ -133,7 +160,7 @@
                                   ]
                 }
                {:fx/type   :h-box
-                :alignment :center
+                :alignment :center-left
                 :children  [
                             {:fx/type :label
                              :text    "Suggested Prompts:"}
@@ -142,8 +169,31 @@
                              :on-value-changed #(do
                                                   (swap! *state assoc :question %)
                                                   (swap! *state assoc :prompt (linen.handlers/handle-file-action :prompt *state))
-                                                  (clojure.pprint/pprint @*state)
-                                                  (pyjama.state/handle-submit *state))}]
+                                                  ;(clojure.pprint/pprint @*state)
+                                                  (pyjama.state/handle-submit *state))}
+                            ]}
+               {:fx/type   :h-box
+                :alignment :center-left
+                :children  [
+                            {:fx/type :label
+                             :text    "Clipboard:"}
+                            {:fx/type          :combo-box
+                             :items            [
+                                                "Summarize"
+                                                "Explain"
+                                                "What is the mood"
+                                                "Ask 5 questions"
+                                                "Find the 5 main keywords that describe the text best."
+                                                ]
+                             :on-value-changed #(do
+                                                  (swap! *state assoc
+                                                         :selected-file nil
+                                                         :freetext (linen.utils/get-clipboard-content)
+                                                         :question %)
+                                                  (swap! *state assoc :prompt (linen.handlers/handle-file-action :prompt *state))
+                                                  ;(clojure.pprint/pprint @*state)
+                                                  (pyjama.state/handle-submit *state))}
+                            ]
                 }
 
                {
@@ -160,7 +210,7 @@
                   :on-action (fn [_] (pyjama.state/handle-submit *state))
                   }
                  {:fx/type   :h-box
-                  :alignment :center
+                  :alignment :center-left
                   :children  [
                               {
                                :fx/type :label
@@ -188,10 +238,10 @@
 (defn app-view [state]
   {:fx/type          :stage
    :showing          true
-   :width   1200
-   :min-width 800
-   :height  800
-   :min-height 800
+   :width            1200
+   :min-width        800
+   :height           800
+   :min-height       800
    :title            "Pyjama Linen - Query Your Data"
    :on-close-request (fn [_] (System/exit 0))
    :icons            [(Image. (io/input-stream (io/resource "delicious.png")))]

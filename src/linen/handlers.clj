@@ -26,6 +26,7 @@
 (defmethod handle-file-action [:preview :no-file] [_ state]
   {:fx/type          :text-area
    :v-box/vgrow      :always
+   :text (@state :freetext)
    :on-text-changed #(swap! state assoc :freetext %)
    }
   )
