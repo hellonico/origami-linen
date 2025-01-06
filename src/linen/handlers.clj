@@ -125,7 +125,7 @@
 (defmethod handle-file-action [:preview :image] [_ state]
   {:fx/type :stack-pane
    :children [{:fx/type :image-view
-               :fit-width 500.0
+               :fit-width 400.0
                :preserve-ratio true
                :image (Image. (io/input-stream (first (:images @state))))}]})
 ;{:fx/type

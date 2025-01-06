@@ -6,7 +6,7 @@
         org.clojure/data.csv {:mvn/version "1.1.0"}
         io.github.mkpaz/atlantafx-base {:mvn/version "2.0.1"}
         com.vladsch.flexmark/flexmark {:mvn/version "0.64.8"}
-        hellonico/pyjama {:git/url "https://github.com/hellonico/pyjama.git" :git/sha "50ce0f5ba7f86c6027f106d8642613e469b906ad"}
+        hellonico/pyjama {:git/url "https://github.com/hellonico/pyjama.git" :git/sha "5ed7a02b2da846b6f7a47e8ea2eaa4e9258f7187"}
         ;org.openjfx/javafx {:mvn/version "20.0.2"} ; JavaFX runtime
         }
 

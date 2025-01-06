@@ -162,7 +162,9 @@
                             {:fx/type          :combo-box
                              :items            (linen.handlers/handle-file-action :suggest *state)
                              :on-value-changed #(do
-                                                  (swap! *state assoc :question %)
+                                                  (swap! *state assoc
+                                                         ;:response nil
+                                                         :question %)
                                                   (swap! *state assoc :prompt (linen.handlers/handle-file-action :prompt *state))
                                                   ;(clojure.pprint/pprint @*state)
                                                   (pyjama.state/handle-submit *state))}
@@ -179,6 +181,7 @@
                              :on-value-changed #(do
                                                   (swap! *state assoc
                                                          :selected-file nil
+                                                         ;:response nil
                                                          :freetext (linen.utils/get-clipboard-content)
                                                          :question %)
                                                   (swap! *state assoc :prompt (linen.handlers/handle-file-action :prompt *state))
@@ -187,6 +190,7 @@
                 }
 
                {:fx/type  :v-box
+                :v-box/vgrow :always
                 :style    "-fx-background-color: black; -fx-background-radius: 10; -fx-padding: 1;"
                 :children [
                            {:fx/type     linen.components/my-webview
@@ -267,7 +271,7 @@
 (defmethod event-handler :default [e]
   (prn (:event/type e) (:fx/event e) (dissoc e :fx/context :fx/event :event/type)))
 
-(defmethod event-handler ::simple [e]
+(defmethod event-handler ::simple [_]
   (swap! *state assoc :simple (not (:simple @*state)))
   )
 
