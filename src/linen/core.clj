@@ -186,6 +186,10 @@
 (defn app-view [state]
   {:fx/type          :stage
    :showing          true
+   :width   1200
+   :min-width 800
+   :height  800
+   :min-height 800
    :title            "Pyjama Linen - Query Your Data"
    :on-close-request (fn [_] (System/exit 0))
    :icons            [(Image. (io/input-stream (io/resource "delicious.png")))]
