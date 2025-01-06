@@ -3,6 +3,7 @@
   (:require [cljfx.api :as fx]
             [clojure.core.async :as async]
             [clojure.java.io :as io]
+            [linen.components]
             [linen.handlers]
             [linen.history :as h]
             [linen.utils]
@@ -86,16 +87,8 @@
         ]
     (swap! *state assoc
            :format-file file
-           :format content
-           )
+           :format content)
     ))
-; TODO: does not work for now
-;
-;(defn pretty-print-json [json-str]
-;  "Pretty prints a JSON string using Cheshire."
-;  (let [parsed-json (cheshire/parse-string json-str true)]  ; Parse JSON into a Clojure map
-;    (cheshire/generate-string parsed-json {:pretty true})))  ; Pretty-print the map back into JSON
-
 
 (defn right-panel [state]
   {:fx/type   :v-box
@@ -225,15 +218,14 @@
                {
                 :fx/type :label
                 :text    "Response:"}
-               {:fx/type     :text-area
-                :wrap-text   true
-                :v-box/vgrow :always
-                :text
-                ; TODO: format the code even when streaming
-                ;(if (:format state)
-                ;               (pretty-print-json (:response state))
-                (:response state)
-                :editable    false}]})
+               {:fx/type  :v-box
+                :style    "-fx-background-color: black; -fx-background-radius: 10; -fx-padding: 1;"
+                :children [
+                           {:fx/type linen.components/my-webview
+                            :props   {:html (:response state)}
+                            :desc    {:fx/type :web-view}}
+                           ]}
+               ]})
 
 (defn app-view [state]
   {:fx/type          :stage

@@ -45,6 +45,7 @@
    "best books by Haruki Murakami"
    ;"日本の首相、ラスト１０人のを教えてください"
    "Say hello in 10 different languages"
+   "Fibonacci in Clojure"
    ]
   )
 
