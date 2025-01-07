@@ -8,8 +8,7 @@
             [linen.history :as h]
             [linen.utils]
             [pyjama.state])
-  (:import (atlantafx.base.theme NordLight)
-           (javafx.scene.image Image)
+  (:import (javafx.scene.image Image)
            (javafx.scene.input DragEvent TransferMode)))
 
 (def *state
@@ -62,15 +61,21 @@
                                    :items            (:history state)}
 
                                   (if (not (nil? (:selected-file @*state)))
-                                    {:fx/type          :image-view
-                                     :fit-height       18.0
-                                     :fit-width        18.0
-                                     :preserve-ratio   true
-                                     :image            (Image. (io/input-stream (io/resource "close-40.png")))
-                                     :on-mouse-clicked (fn [_]
-                                                         (swap! *state assoc
-                                                                :selected-file nil
-                                                                ))
+                                    ;{:fx/type          :image-view
+                                    ; :fit-height       18.0
+                                    ; :fit-width        18.0
+                                    ; :preserve-ratio   true
+                                    ; :image            (Image. (io/input-stream (io/resource "close-40.png")))
+                                    ; :on-mouse-clicked (fn [_]
+                                    ;                     (swap! *state assoc
+                                    ;                            :selected-file nil
+                                    ;                            ))
+                                    ; }
+                                    {:fx/type :label :text " X "
+                                      :on-mouse-clicked (fn [_]
+                                                          (swap! *state assoc
+                                                                 :selected-file nil
+                                                                 ))
                                      }
                                     {:fx/type :label}
                                     )
@@ -92,7 +97,7 @@
     ))
 
 (def spinner-image
-  (Image. (io/input-stream (io/resource "spinner.gif"))))
+  (Image. (io/input-stream (io/resource "pink/spinner.gif"))))
 
 
 (defn right-panel [state]
@@ -101,7 +106,6 @@
    :spacing   5
    :padding   5
    :children  [
-
                {:fx/type         :h-box
                 :spacing         5
                 :alignment       :center-left
@@ -125,7 +129,6 @@
                                          :items            (:local-models state)
                                          :value            (:model state)
                                          :on-value-changed #(swap! *state assoc :model %)}
-
                                         {:fx/type :label
                                          :text    "Format:"}
                                         (if (not (nil? (:format-file @*state)))
@@ -135,17 +138,23 @@
 
                                                       {:fx/type :label
                                                        :text    (.getName (io/as-file (:format-file @*state)))}
-                                                      {:fx/type          :image-view
-                                                       :fit-height       18.0
-                                                       :fit-width        18.0
-                                                       :preserve-ratio   true
-                                                       :image            (Image. (io/input-stream (io/resource "close-40.png")))
+                                                      {:fx/type :label :text " X "
                                                        :on-mouse-clicked (fn [_]
                                                                            (swap! *state assoc
                                                                                   :format-file nil
                                                                                   :format nil
-                                                                                  ))
-                                                       }
+                                                                                  ))}
+                                                      ;{:fx/type          :image-view
+                                                      ; :fit-height       18.0
+                                                      ; :fit-width        18.0
+                                                      ; :preserve-ratio   true
+                                                      ; :image            (Image. (io/input-stream (io/resource "close-40.png")))
+                                                      ; :on-mouse-clicked (fn [_]
+                                                      ;                     (swap! *state assoc
+                                                      ;                            :format-file nil
+                                                      ;                            :format nil
+                                                      ;                            ))
+                                                      ; }
                                                       ]
                                            }
                                           {:fx/type :label
@@ -247,7 +256,7 @@
   {:fx/type          :stage
    :showing          true
    :width            1200
-   :min-width        800
+   :min-width        1000
    :height           800
    :min-height       400
    :title            "Pyjama Linen"
@@ -255,7 +264,8 @@
    :icons            [(Image. (io/input-stream (io/resource "flax-seeds-96.png")))]
    :scene            {:fx/type      :scene
                       :accelerators {[:escape] {:event/type ::simple}}
-                      :stylesheets  #{(.getUserAgentStylesheet (NordLight.))}
+                      ;:stylesheets  #{(.getUserAgentStylesheet (NordLight.))}
+                      :stylesheets #{(.toExternalForm (io/resource "pink/terminal.css"))}
                       :root
                       {:fx/type           :split-pane
                        :divider-positions [0.5]             ;; Initial position (50% split)
