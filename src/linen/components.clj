@@ -12,7 +12,7 @@
   (fx/make-ext-with-props
     {:html (fx.prop/make
              (fx.mutator/setter #(doto (.getEngine ^WebView %1)
-                                   (.setUserStyleSheetLocation (.toExternalForm(io/resource "pink/web.css")))
+                                   (.setUserStyleSheetLocation (.toExternalForm(io/resource "web.css")))
                                    ;(.setJavaScriptEnabled true)
                                    (.loadContent
                                      ;(str

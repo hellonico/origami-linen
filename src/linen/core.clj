@@ -61,21 +61,9 @@
                                    :items            (:history state)}
 
                                   (if (not (nil? (:selected-file @*state)))
-                                    ;{:fx/type          :image-view
-                                    ; :fit-height       18.0
-                                    ; :fit-width        18.0
-                                    ; :preserve-ratio   true
-                                    ; :image            (Image. (io/input-stream (io/resource "close-40.png")))
-                                    ; :on-mouse-clicked (fn [_]
-                                    ;                     (swap! *state assoc
-                                    ;                            :selected-file nil
-                                    ;                            ))
-                                    ; }
-                                    {:fx/type :label :text " X "
-                                      :on-mouse-clicked (fn [_]
-                                                          (swap! *state assoc
-                                                                 :selected-file nil
-                                                                 ))
+                                    {:fx/type          :label :text " X "
+                                     :on-mouse-clicked (fn [_]
+                                                         (swap! *state assoc :selected-file nil))
                                      }
                                     {:fx/type :label}
                                     )
@@ -97,8 +85,7 @@
     ))
 
 (def spinner-image
-  (Image. (io/input-stream (io/resource "pink/spinner.gif"))))
-
+  (Image. (io/input-stream (io/resource "spinner.gif"))))
 
 (defn right-panel [state]
   {:fx/type   :v-box
@@ -106,7 +93,7 @@
    :spacing   5
    :padding   5
    :children  [
-               {:fx/type         :h-box
+               {:fx/type         :v-box
                 :spacing         5
                 :alignment       :center-left
                 :on-drag-over    (fn [^DragEvent event]
@@ -116,104 +103,135 @@
                                          (.acceptTransferModes (into-array TransferMode [TransferMode/COPY]))))))
                 :on-drag-dropped #(handle-drag-dropped-format *state %)
                 :children
-                (if (:simple state) [] [{:fx/type :label
-                                         :text    "URL:"}
-                                        {:fx/type         :text-field
-                                         :text            (:url state)
-                                         :on-text-changed #(do
-                                                             (swap! *state assoc :url %)
-                                                             (async/thread (pyjama.state/local-models *state)))}
-                                        {:fx/type :label
-                                         :text    "Model:"}
-                                        {:fx/type          :combo-box
-                                         :items            (:local-models state)
-                                         :value            (:model state)
-                                         :on-value-changed #(swap! *state assoc :model %)}
-                                        {:fx/type :label
-                                         :text    "Format:"}
-                                        (if (not (nil? (:format-file @*state)))
-                                          {:fx/type  :h-box
-                                           :alignment :center-left
-                                           :children [
-
-                                                      {:fx/type :label
-                                                       :text    (.getName (io/as-file (:format-file @*state)))}
-                                                      {:fx/type :label :text " X "
-                                                       :on-mouse-clicked (fn [_]
+                (if (:simple state) [] [
+                                        {
+                                         :fx/type   :h-box
+                                         :alignment :center-left
+                                         :children  [
+                                                     {:fx/type   :label
+                                                      :min-width 150
+                                                      :text      "Ollama URL"}
+                                                     {:fx/type         :text-field
+                                                      :text            (:url state)
+                                                      ;:max-width       Double/MAX_VALUE
+                                                      :h-box/hgrow     :always
+                                                      :on-text-changed #(do
+                                                                          (swap! *state assoc :url %)
+                                                                          (async/thread (pyjama.state/local-models *state)))}
+                                                     ]}
+                                        {
+                                         :fx/type   :h-box
+                                         :alignment :center-left
+                                         :children  [
+                                                     {:fx/type   :label
+                                                      :min-width 150
+                                                      :text      "Model"}
+                                                     {:fx/type          :combo-box
+                                                      :max-width        Double/MAX_VALUE
+                                                      :h-box/hgrow      :always
+                                                      :items            (:local-models state)
+                                                      :value            (:model state)
+                                                      :on-value-changed #(swap! *state assoc :model %)}
+                                                     ]}
+                                        {
+                                         :fx/type   :h-box
+                                         :alignment :center-left
+                                         :children  [
+                                                     {:fx/type   :label
+                                                      :min-width 150
+                                                      :text      "Format"}
+                                                     (if (not (nil? (:format-file @*state)))
+                                                       {:fx/type   :h-box
+                                                        :alignment :center-left
+                                                        :children  [
+                                                                    {:fx/type   :label
+                                                                     :min-width 100
+                                                                     :text      (.getName (io/as-file (:format-file @*state)))}
+                                                                    {:fx/type          :label :text " X "
+                                                                     :on-mouse-clicked (fn [_]
+                                                                                         (swap! *state assoc
+                                                                                                :format-file nil
+                                                                                                :format nil))}
+                                                                    ]
+                                                        }
+                                                       {:fx/type :label
+                                                        :text    "Free. (Drag edn file)"}
+                                                       )]}
+                                        {
+                                         :fx/type   :h-box
+                                         :alignment :center-left
+                                         :children  [
+                                                     {:fx/type   :label
+                                                      :min-width 150
+                                                      :text      "System "
+                                                      }
+                                                     {:fx/type         :text-area
+                                                      :h-box/hgrow     :always
+                                                      :max-height      100
+                                                      :text            (if (empty? (:system state)) nil (:system state))
+                                                      :prompt-text     "System"
+                                                      :on-text-changed #(swap! *state assoc :system %)}
+                                                     ]}
+                                        {:fx/type   :h-box
+                                         :alignment :center-left
+                                         :children  [
+                                                     {:fx/type   :label
+                                                      :min-width 150
+                                                      :text      "Suggested Prompts"}
+                                                     {:fx/type          :combo-box
+                                                      :h-box/hgrow      :always
+                                                      :max-width        Double/MAX_VALUE
+                                                      :items            (linen.handlers/handle-file-action :suggest *state)
+                                                      :on-value-changed #(do
+                                                                           (swap! *state assoc :question %)
+                                                                           (swap! *state assoc :prompt (linen.handlers/handle-file-action :prompt *state))
+                                                                           ;(clojure.pprint/pprint @*state)
+                                                                           (pyjama.state/handle-submit *state))}
+                                                     ]}
+                                        {:fx/type   :h-box
+                                         :alignment :center-left
+                                         :children  [
+                                                     {:fx/type   :label
+                                                      :min-width 150
+                                                      :text      "Clipboard"}
+                                                     {:fx/type          :combo-box
+                                                      :h-box/hgrow      :always
+                                                      :max-width        Double/MAX_VALUE
+                                                      :items            [
+                                                                         "Summarize"
+                                                                         "Explain"
+                                                                         "What is the mood"
+                                                                         "Ask 5 questions"
+                                                                         "Find the 5 main keywords that describe the text best."
+                                                                         ]
+                                                      :on-value-changed #(do
                                                                            (swap! *state assoc
-                                                                                  :format-file nil
-                                                                                  :format nil
-                                                                                  ))}
-                                                      ;{:fx/type          :image-view
-                                                      ; :fit-height       18.0
-                                                      ; :fit-width        18.0
-                                                      ; :preserve-ratio   true
-                                                      ; :image            (Image. (io/input-stream (io/resource "close-40.png")))
-                                                      ; :on-mouse-clicked (fn [_]
-                                                      ;                     (swap! *state assoc
-                                                      ;                            :format-file nil
-                                                      ;                            :format nil
-                                                      ;                            ))
-                                                      ; }
-                                                      ]
-                                           }
-                                          {:fx/type :label
-                                           :text    "Free. (Drag edn file)"}
-                                          )
-
+                                                                                  :selected-file nil
+                                                                                  :freetext (linen.utils/get-clipboard-content)
+                                                                                  :question %)
+                                                                           (swap! *state assoc :prompt (linen.handlers/handle-file-action :prompt *state))
+                                                                           (pyjama.state/handle-submit *state))}
+                                                     ]
+                                         }
                                         ])
                 }
-               {:fx/type   :h-box
-                :alignment :center-left
-                :children  [
-                            {:fx/type :label
-                             :text    "Suggested Prompts:"}
-                            {:fx/type          :combo-box
-                             :items            (linen.handlers/handle-file-action :suggest *state)
-                             :on-value-changed #(do
-                                                  (swap! *state assoc
-                                                         ;:response nil
-                                                         :question %)
-                                                  (swap! *state assoc :prompt (linen.handlers/handle-file-action :prompt *state))
-                                                  ;(clojure.pprint/pprint @*state)
-                                                  (pyjama.state/handle-submit *state))}
-                            {:fx/type :label
-                             :text    "Clipboard:"}
-                            {:fx/type          :combo-box
-                             :items            [
-                                                "Summarize"
-                                                "Explain"
-                                                "What is the mood"
-                                                "Ask 5 questions"
-                                                "Find the 5 main keywords that describe the text best."
-                                                ]
-                             :on-value-changed #(do
-                                                  (swap! *state assoc
-                                                         :selected-file nil
-                                                         ;:response nil
-                                                         :freetext (linen.utils/get-clipboard-content)
-                                                         :question %)
-                                                  (swap! *state assoc :prompt (linen.handlers/handle-file-action :prompt *state))
-                                                  (pyjama.state/handle-submit *state))}
-                            ]
-                }
 
-               {:fx/type  :v-box
+
+               {:fx/type     :v-box
                 :v-box/vgrow :always
-                :style    "-fx-background-color: black; -fx-background-radius: 10; -fx-padding: 1;"
-                :children [
-                           {:fx/type     linen.components/my-webview
-                            :v-box/vgrow :always
-                            :max-height  Double/MAX_VALUE
-                            :props       {:html (:response state)}
-                            :desc        {:fx/type :web-view}}
-                           ]}
+                ;:style       "-fx-background-color: black; -fx-background-radius: 10; -fx-padding: 1;"
+                :children    [
+                              {:fx/type     linen.components/my-webview
+                               :v-box/vgrow :always
+                               :max-height  Double/MAX_VALUE
+                               :props       {:html (:response state)}
+                               :desc        {:fx/type :web-view}}
+                              ]}
 
                {
                 :fx/type  :h-box
                 :children [
                            {:fx/type         :text-field
-                            ;:style    "-fx-background-color: white; -fx-background-radius: 5; -fx-padding: 1;"
                             :max-width       Double/MAX_VALUE
                             :h-box/hgrow     :always
                             :text            (:question state)
@@ -223,30 +241,15 @@
                            (if (not (state :processing))
                              {:fx/type   :button
                               :text      "Ask"
-                              :on-action (fn [_] (pyjama.state/handle-submit *state))
+                              :on-action (fn [_]
+                                           (swap! *state assoc :prompt (linen.handlers/handle-file-action :prompt *state))
+                                           (pyjama.state/handle-submit *state))
                               }
                              {:fx/type          :image-view
                               :image            spinner-image
                               :on-mouse-clicked (fn [_] (swap! *state assoc :processing false))
                               :fit-width        24
                               :fit-height       24}
-                             ;{:fx/type   :h-box
-                             ; :alignment :center-left
-                             ; :children  [
-                             ;             ;{
-                             ;             ; :fx/type :label
-                             ;             ; :text    (str (:model @*state) " is thinking ...")}
-                             ;             ;{:fx/type   :button
-                             ;             ; :text      "Stop"
-                             ;             ; :on-action (fn [_] (swap! *state assoc :processing false))
-                             ;             ; }
-                             ;             {:fx/type    :image-view
-                             ;              :image      (Image. (io/input-stream (io/resource "spinner.gif")))
-                             ;              :on-mouse-clicked (fn [_] (swap! *state assoc :processing false))
-                             ;              :fit-width  24
-                             ;              :fit-height 24}
-                             ;             ]
-                             ; }
                              )
                            ]}
 
@@ -264,12 +267,14 @@
    :icons            [(Image. (io/input-stream (io/resource "flax-seeds-96.png")))]
    :scene            {:fx/type      :scene
                       :accelerators {[:escape] {:event/type ::simple}}
-                      ;:stylesheets  #{(.getUserAgentStylesheet (NordLight.))}
-                      :stylesheets #{(.toExternalForm (io/resource "pink/terminal.css"))}
+                      :stylesheets  #{
+                      ;                ;"extra.css"
+                                      (.toExternalForm (io/resource "terminal.css"))
+                                      }
                       :root
                       {:fx/type           :split-pane
-                       :divider-positions [0.5]             ;; Initial position (50% split)
-                       :orientation       :horizontal       ;; Horizontal split
+                       :divider-positions [0.5]
+                       :orientation       :horizontal
                        :items             (if (:simple state)
                                             [(right-panel state)]
                                             [(left-panel state) (right-panel state)])

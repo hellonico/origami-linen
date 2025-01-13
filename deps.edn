@@ -6,7 +6,13 @@
         org.clojure/data.csv {:mvn/version "1.1.0"}
         ;io.github.mkpaz/atlantafx-base {:mvn/version "2.0.1"}
         com.vladsch.flexmark/flexmark {:mvn/version "0.64.8"}
-        hellonico/pyjama {:git/url "https://github.com/hellonico/pyjama.git" :git/sha "5ed7a02b2da846b6f7a47e8ea2eaa4e9258f7187"}
+        hellonico/origami-pink {
+                                :git/url "https://github.com/hellonico/origami-pink.git"
+                                ;:local/root "../origami-pink/pink"
+                                :deps/root "pink"
+                                :git/sha "b157df1de3342b5dd7e694ecbbbe05db99bcc4c4"
+                                }
+        hellonico/pyjama {:git/url "https://github.com/hellonico/pyjama.git" :git/sha "ad9e260d4ae3347625022b98521797e1dd7210d2"}
         ;org.openjfx/javafx {:mvn/version "20.0.2"} ; JavaFX runtime
         }
 
