@@ -10,7 +10,7 @@
                                 :git/url "https://github.com/hellonico/origami-pink.git"
                                 ;:local/root "../origami-pink/pink"
                                 :deps/root "pink"
-                                :git/sha "b157df1de3342b5dd7e694ecbbbe05db99bcc4c4"
+                                :git/sha "2d8486840c2c33d2207452b3b302159d9df6d7f9"
                                 }
         hellonico/pyjama {:git/url "https://github.com/hellonico/pyjama.git" :git/sha "ad9e260d4ae3347625022b98521797e1dd7210d2"}
         ;org.openjfx/javafx {:mvn/version "20.0.2"} ; JavaFX runtime
