@@ -1,26 +1,46 @@
 {
  :paths ["src" "resources"]
- :deps {org.clojure/clojure {:mvn/version "1.11.1"} ; Adjust to the desired Clojure version
-        cljfx/cljfx {:mvn/version "1.9.3"} ; Latest Cljfx version
-        dk.ative/docjure   {:mvn/version "1.14.0"} ; Library for Excel file handling
-        org.clojure/data.csv {:mvn/version "1.1.0"}
-        ;io.github.mkpaz/atlantafx-base {:mvn/version "2.0.1"}
-        com.vladsch.flexmark/flexmark {:mvn/version "0.64.8"}
-        hellonico/origami-pink {
-                                :git/url "https://github.com/hellonico/origami-pink.git"
-                                ;:local/root "../origami-pink/pink"
-                                :deps/root "pink"
-                                :git/sha "2d8486840c2c33d2207452b3b302159d9df6d7f9"
-                                }
-        hellonico/pyjama {:git/url "https://github.com/hellonico/pyjama.git" :git/sha "ad9e260d4ae3347625022b98521797e1dd7210d2"}
-        ;org.openjfx/javafx {:mvn/version "20.0.2"} ; JavaFX runtime
-        }
+ :deps  {org.clojure/clojure           {:mvn/version "1.11.1"} ; Adjust to the desired Clojure version
+         cljfx/cljfx                   {:mvn/version "1.9.3"} ; Latest Cljfx version
+         dk.ative/docjure              {:mvn/version "1.14.0"} ; Library for Excel file handling
+         org.clojure/data.csv          {:mvn/version "1.1.0"}
+         ;io.github.mkpaz/atlantafx-base {:mvn/version "2.0.1"} ; was not very good
+         com.vladsch.flexmark/flexmark {:mvn/version "0.64.8"}
+         hellonico/origami-pink        {
+                                        :git/url   "https://github.com/hellonico/origami-pink.git"
+                                        ;:local/root "../pink/pink"
+                                        :deps/root "pink"
+                                        :git/sha   "2d8486840c2c33d2207452b3b302159d9df6d7f9"
+                                        }
+         hellonico/pyjama              {:git/url "https://github.com/hellonico/pyjama.git" :git/sha "ad9e260d4ae3347625022b98521797e1dd7210d2"}
+         hellonico/pyjama-fx        {
+                                        ;:git/url   "https://github.com/hellonico/origami-pink.git"
+                                        :local/root "../pyjama-fx"}
+                                        ;org.openjfx/javafx {:mvn/version "20.0.2"} ; JavaFX runtime
+
+         ;build-tools {:local/root "./build-tools"}
+         }
 
  :aliases
  {
-  :build
-  {:deps {io.github.clojure/tools.build {:git/tag "v0.10.6" :git/sha "52cf7d6"}} :ns-default build}
-  }
+  ;:buildme
+  ;{:deps {build-tools/build-tools {:local/root "./build-tools"}}
+  ; :exec-fn build-tools.core/uberize
+  ; :exec-args {:app-name "Linen" :mainns linen.core :compile [linen.core]}
+  ; }
+  ;:jpackage
+  ;{:deps {build-tools/build-tools {:local/root "./build-tools"}}
+  ; :exec-fn build-tools.core/jpackage
+  ; :exec-args {:app-name "Linen"}}
+  ;}
+  :build-tools
+  {:deps      {build-tools/build-tools {:local/root "../build-tools"}}
+   ;:exec-fn   build-tools.core/build-all
+   :exec-args {:app-name "Linen" :mainns linen.core :compile [linen.core]}}
+
+  ;:build
+  ;{:deps {build-tools/build-tools {:local/root "../build-tools"}}}
   ;:run {:main-opts ["-m" "excel-table-preview"] ; Replace with your main namespace
   ;      :jvm-opts ["--add-modules" "javafx.controls"]}}
- }
+
+ }}

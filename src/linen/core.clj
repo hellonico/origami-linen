@@ -3,10 +3,10 @@
   (:require [cljfx.api :as fx]
             [clojure.core.async :as async]
             [clojure.java.io :as io]
-            [linen.components]
+            [pyjama.components]
             [linen.handlers]
-            [linen.history :as h]
-            [linen.utils]
+            [pyjama.history :as h]
+            [pyjama.utils]
             [pyjama.state])
   (:import (javafx.scene.image Image)
            (javafx.scene.input DragEvent TransferMode)))
@@ -21,7 +21,7 @@
          :rows         []
          :headers      []
          :local-models []
-         :history      (h/read-history) :selected-file nil}))
+         :history      (h/read-history "linen" "file-history.txt") :selected-file nil}))
 
 (defn handle-drag-dropped [_state event]
   (let [db (.getDragboard event)
@@ -29,7 +29,7 @@
         file (first files)]
     (when file
       (let [file-path (.getAbsolutePath file)]
-        (h/append-to-history file-path)
+        (h/append-to-history "linen" "file-history.txt" file)
         (swap! *state update :history (fn [x] (cons file-path (remove #(= % file-path) x))))
         (swap! *state assoc
                :images []
@@ -207,7 +207,7 @@
                                                       :on-value-changed #(do
                                                                            (swap! *state assoc
                                                                                   :selected-file nil
-                                                                                  :freetext (linen.utils/get-clipboard-content)
+                                                                                  :freetext (pyjama.utils/get-clipboard-content)
                                                                                   :question %)
                                                                            (swap! *state assoc :prompt (linen.handlers/handle-file-action :prompt *state))
                                                                            (pyjama.state/handle-submit *state))}
@@ -221,7 +221,7 @@
                 :v-box/vgrow :always
                 ;:style       "-fx-background-color: black; -fx-background-radius: 10; -fx-padding: 1;"
                 :children    [
-                              {:fx/type     linen.components/my-webview
+                              {:fx/type     pyjama.components/my-webview
                                :v-box/vgrow :always
                                :max-height  Double/MAX_VALUE
                                :props       {:html (:response state)}

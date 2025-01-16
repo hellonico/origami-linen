@@ -1,0 +1,53 @@
+/*!* overwrite default row style *!*/
+/*.table-row-cell {*/
+/*    -fx-background-color: transparent;*/
+/*    -fx-background-insets: 0;*/
+/*}*/
+
+/*!* apply row style to cells instead *!*/
+/*.table-row-cell .table-cell {*/
+/*    -fx-table-cell-border-color: black*/
+/*    -fx-background-color: black;*/
+/*    -fx-background-insets: 0, 0 0 1 0;*/
+/*}*/
+
+/*.table-row-cell:odd {*/
+/*    -fx-control-inner-background-alt: black;*/
+/*    -fx-background: black;*/
+/*}*/
+
+/*!* fix markup for selected cells/cells in a selected row *!*/
+/*.table-row-cell:filled > .table-cell:selected,*/
+/*.table-row-cell:filled:selected > .table-cell {*/
+/*    -fx-selection-bar-non-focused: black;*/
+/*    -fx-background: black;*/
+/*    -fx-table-cell-border-color: derive(-fx-background, 20%);*/
+/*}*/
+
+/*.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell:filled:selected .table-cell,*/
+/*.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell .table-cell:selected {*/
+/*    -fx-background: -fx-selection-bar;*/
+/*}*/
+
+/*.table-row-cell:empty {*/
+/*    -fx-background-color: transparent;*/
+/*}*/
+
+
+/*.table-view .column-header, .table-view .filler {*/
+/*    -fx-text-fill: white;*/
+/*    -fx-border-width: 0, 0;*/
+/*    -fx-font-size: 12px;*/
+/*}*/
+
+/*.filler, .corner{*/
+/*    -fx-background-color: black;*/
+/*}*/
+
+/*.scroll-bar .corner{*/
+/*    -fx-background-color: black;*/
+/*}*/
+
+/*.scroll-bar .filler{*/
+/*    -fx-background-color: black;*/
+/*}*/
