@@ -222,7 +222,6 @@
 
                {:fx/type     :v-box
                 :v-box/vgrow :always
-                ;:style       "-fx-background-color: black; -fx-background-radius: 10; -fx-padding: 1;"
                 :children    [
                               {:fx/type     pyjama.components/my-webview
                                :v-box/vgrow :always
