@@ -3,11 +3,12 @@
   (:require [cljfx.api :as fx]
             [clojure.core.async :as async]
             [clojure.java.io :as io]
-            [pyjama.components]
             [linen.handlers]
+            [pyjama.components]
+            [pyjama.components]
             [pyjama.history :as h]
-            [pyjama.utils]
-            [pyjama.state])
+            [pyjama.state]
+            [pyjama.utils])
   (:import (javafx.scene.image Image)
            (javafx.scene.input DragEvent TransferMode)))
 
@@ -84,9 +85,6 @@
            :format content)
     ))
 
-(def spinner-image
-  (Image. (io/input-stream (io/resource "spinner.gif"))))
-
 (defn right-panel [state]
   {:fx/type   :v-box
    :min-width 400.0
@@ -117,7 +115,12 @@
                                                       :h-box/hgrow     :always
                                                       :on-text-changed #(do
                                                                           (swap! *state assoc :url %)
-                                                                          (async/thread (pyjama.state/local-models *state)))}
+                                                                          (async/thread
+                                                                            (pyjama.state/check-connection *state)
+                                                                            (pyjama.state/local-models *state)
+                                                                            ))}
+                                                     (pyjama.components/connected-image state)
+
                                                      ]}
                                         {
                                          :fx/type   :h-box
@@ -246,7 +249,7 @@
                                            (pyjama.state/handle-submit *state))
                               }
                              {:fx/type          :image-view
-                              :image            spinner-image
+                              :image            (pyjama.fx/rsc-image "spinner.gif")
                               :on-mouse-clicked (fn [_] (swap! *state assoc :processing false))
                               :fit-width        24
                               :fit-height       24}
@@ -268,7 +271,7 @@
    :scene            {:fx/type      :scene
                       :accelerators {[:escape] {:event/type ::simple}}
                       :stylesheets  #{
-                      ;                ;"extra.css"
+                                      ;                ;"extra.css"
                                       (.toExternalForm (io/resource "terminal.css"))
                                       }
                       :root
@@ -298,5 +301,7 @@
            }))
 
 (defn -main []
-  (async/thread (pyjama.state/local-models *state))
+  (async/thread
+    (pyjama.state/local-models *state)
+    (pyjama.state/check-version *state))
   (fx/mount-renderer *state renderer))
