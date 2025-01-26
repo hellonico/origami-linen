@@ -266,7 +266,7 @@
    :min-height       400
    :title            "Pyjama Linen"
    :on-close-request (fn [_] (System/exit 0))
-   :icons            [(Image. (io/input-stream (io/resource "flax-seeds-96.png")))]
+   :icons            [(Image. (io/input-stream (io/resource "linen.png")))]
    :scene            {:fx/type      :scene
                       :accelerators {[:escape] {:event/type ::simple}}
                       :stylesheets  #{
