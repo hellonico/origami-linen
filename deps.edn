@@ -16,6 +16,9 @@
                                         ;:git/sha "ad9e260d4ae3347625022b98521797e1dd7210d2"
                                         :local/root "../pyjama"
                                         }
+         hellonico/pyjama-io        {
+                                     :local/root "../pyjama-io"
+                                     }
          hellonico/pyjama-fx        {
                                         ;:git/url   "https://github.com/hellonico/origami-pink.git"
                                         ;:git/sha "d9e784f15f21551d4405e1c1c7f34e54c7520e58"

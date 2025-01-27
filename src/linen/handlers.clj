@@ -1,10 +1,10 @@
 (ns linen.handlers
-  (:require [clojure.data.csv :as csv]
-            [clojure.java.io :as io]
-            [dk.ative.docjure.spreadsheet :as ss])
+  (:require [clojure.java.io :as io]
+            [pyjama.utils]
+            [pyjama.io.core :refer :all]
+            )
   (:import (javafx.scene.control TableView)
-           (javafx.scene.image Image)
-           (org.apache.poi.ss.usermodel Cell)))
+           (javafx.scene.image Image)))
 
 (defn extension-group [ext]
   (cond
@@ -58,31 +58,6 @@
    ]
   )
 
-(defn read-excel [file-path]
-  (let [workbook (ss/load-workbook file-path)
-        ; TODO: support for other sheets than the first one
-        ;sheet (ss/select-sheet "Sheet1" workbook)
-        sheet (first (ss/sheet-seq workbook))
-        rows (ss/row-seq sheet)
-        headers (map #(-> % .getStringCellValue keyword)
-                     (filter #(instance? Cell %)
-                             (ss/cell-seq (first rows))))
-        data (map (fn [row]
-                    (zipmap headers (map #(when (instance? Cell %)
-                                            (try
-                                              (.toString %)
-                                              (catch Exception _ nil)))
-                                         (ss/cell-seq row))))
-                  (rest rows))]
-    {:headers headers :rows data}))
-
-
-(defn read-csv [file-path]
-  (with-open [reader (io/reader file-path)]
-    (let [lines (doall (csv/read-csv reader))
-          headers (map keyword (first lines))
-          rows (map #(zipmap headers %) (rest lines))]
-      {:headers headers :rows rows})))
 
 (defmethod handle-file-action [:load :table] [_ state]
   (let [
@@ -101,20 +76,10 @@
                :headers (:headers csv-data)
                :rows (:rows csv-data))))))
 
-
-(defn to-markdown [{:keys [headers rows]}]
-  (let [header-row (str "| " (clojure.string/join " | " (map name headers)) " |")
-        separator-row (str "| " (clojure.string/join " | " (repeat (count headers) "---")) " |")
-        data-rows (map (fn [row]
-                         (str "| " (clojure.string/join " | " (map #(get row % "") headers)) " |"))
-                       rows)]
-
-    (clojure.string/join "\n" (concat [header-row separator-row] data-rows))))
-
 (defmethod handle-file-action [:prompt :table] [_ state]
   (str
     "This is a markdown formatted table of data you have for analysis:\n"
-    (to-markdown @state)
+    (pyjama.utils/to-markdown @state)
     "\n"
     (:question state)))
 
