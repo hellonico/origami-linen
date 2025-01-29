@@ -1,30 +1,33 @@
 {
+ :mvn/repos {"psiegman" {:url "https://raw.githubusercontent.com/psiegman/mvn-repo/master/releases/"}}
+
  :paths ["src" "resources"]
- :deps  {org.clojure/clojure           {:mvn/version "1.12.0"} ; Adjust to the desired Clojure version
-         cljfx/cljfx                   {:mvn/version "1.9.3"} ; Latest Cljfx version
-         dk.ative/docjure              {:mvn/version "1.14.0"} ; Library for Excel file handling
-         org.clojure/data.csv          {:mvn/version "1.1.0"}
+ :deps  {org.clojure/clojure    {:mvn/version "1.12.0"}     ; Adjust to the desired Clojure version
+         cljfx/cljfx            {:mvn/version "1.9.3"}      ; Latest Cljfx version
+         dk.ative/docjure       {:mvn/version "1.14.0"}     ; Library for Excel file handling
+         org.clojure/data.csv   {:mvn/version "1.1.0"}
          ;io.github.mkpaz/atlantafx-base {:mvn/version "2.0.1"} ; was not very good
-         hellonico/origami-pink        {
-                                        ;:git/url   "https://github.com/hellonico/origami-pink.git"
-                                        :local/root "../origami-pink/pink"
-                                        ;:deps/root "pink"
-                                        ;:git/sha   "388305305613f8d8d6c3754f80f97a01fee06381"
-                                        }
-         hellonico/pyjama              {
-                                        ;:git/url "https://github.com/hellonico/pyjama.git"
-                                        ;:git/sha "ad9e260d4ae3347625022b98521797e1dd7210d2"
-                                        :local/root "../pyjama"
-                                        }
-         hellonico/pyjama-io        {
-                                     :local/root "../pyjama-io"
-                                     }
-         hellonico/pyjama-fx        {
-                                        ;:git/url   "https://github.com/hellonico/origami-pink.git"
-                                        ;:git/sha "d9e784f15f21551d4405e1c1c7f34e54c7520e58"
-                                        :local/root "../pyjama-fx"
-                                        }
-                                        ;org.openjfx/javafx {:mvn/version "20.0.2"} ; JavaFX runtime
+         hellonico/origami-pink {
+                                 ;:git/url   "https://github.com/hellonico/origami-pink.git"
+                                 :local/root "../origami-pink/pink"
+                                 ;:deps/root "pink"
+                                 ;:git/sha   "388305305613f8d8d6c3754f80f97a01fee06381"
+                                 }
+         hellonico/pyjama       {
+                                 ;:git/url "https://github.com/hellonico/pyjama.git"
+                                 ;:git/sha "ad9e260d4ae3347625022b98521797e1dd7210d2"
+                                 :local/root "../pyjama"
+                                 }
+         hellonico/pyjama-io    {
+                                 :local/root "../pyjama-io"
+                                 }
+         hellonico/pyjama-fx    {
+                                 ;:git/url   "https://github.com/hellonico/origami-pink.git"
+                                 ;:git/sha "d9e784f15f21551d4405e1c1c7f34e54c7520e58"
+                                 :local/root "../pyjama-fx"
+                                 }
+         ;org.openjfx/javafx {:mvn/version "20.0.2"} ; JavaFX runtime
+
 
          ;build-tools {:local/root "./build-tools"}
          }
@@ -51,4 +54,4 @@
   ;:run {:main-opts ["-m" "excel-table-preview"] ; Replace with your main namespace
   ;      :jvm-opts ["--add-modules" "javafx.controls"]}}
 
- }}
+  }}

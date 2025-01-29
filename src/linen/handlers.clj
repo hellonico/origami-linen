@@ -1,6 +1,7 @@
 (ns linen.handlers
   (:require [clojure.java.io :as io]
             [pyjama.utils]
+            [pyjama.io.readers]
             [pyjama.io.core :refer :all]
             )
   (:import (javafx.scene.control TableView)
@@ -10,7 +11,7 @@
   (cond
     (#{:xlsx :xls :csv} ext) :table
     (#{:png :jpg :jpeg} ext) :image
-    (#{:txt :log :md} ext) :text
+    (#{:txt :log :md :doc :docx :pdf :epub} ext) :text
     (#{:clj :py :go :rs} ext) :code
     :else :unknown))
 
@@ -130,13 +131,14 @@
 (defmethod handle-file-action [:prompt :text] [_ state]
   (str
     "This is a text:\n"
-    (slurp (:selected-file @state))
+    ;(slurp (:selected-file @state))
+    (pyjama.io.readers/extract-text (:selected-file @state))
     "\n"
     (:question @state)))
 
 (defmethod handle-file-action [:preview :text] [_ state]
   {:fx/type     :text-area
-   :text        (slurp (:selected-file @state))
+   :text        (pyjama.io.readers/extract-text (:selected-file @state))
    :v-box/vgrow :always})
 
 (defmethod handle-file-action [:preview :code] [_ state]
