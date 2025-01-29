@@ -8,7 +8,7 @@
             [pyjama.components]
             [pyjama.history :as h]
             [pyjama.state]
-            [pyjama.utils])
+            [pyjama.fx.utils])
   (:import (javafx.scene.image Image)
            (javafx.scene.input DragEvent TransferMode)))
 
@@ -210,7 +210,7 @@
                                                       :on-value-changed #(do
                                                                            (swap! *state assoc
                                                                                   :selected-file nil
-                                                                                  :freetext (pyjama.utils/get-clipboard-content)
+                                                                                  :freetext (pyjama.fx.utils/get-clipboard-content)
                                                                                   :question %)
                                                                            (swap! *state assoc :prompt (linen.handlers/handle-file-action :prompt *state))
                                                                            (pyjama.state/handle-submit *state))}
