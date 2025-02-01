@@ -2,7 +2,7 @@
   (:require [clojure.java.io :as io]
             [pyjama.utils]
             [pyjama.io.readers]
-            [pyjama.io.core :refer :all]
+            [pyjama.io.linen :refer :all]
             )
   (:import (javafx.scene.control TableView)
            (javafx.scene.image Image)))
