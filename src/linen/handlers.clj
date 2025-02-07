@@ -31,9 +31,7 @@
    :text (@state :freetext)
    :style "-fx-focus-color: transparent; -fx-text-box-border: transparent;"
    :on-text-changed #(do
-                       (swap! state assoc :freetext %)
-                       ;(prn @state)
-                       )
+                       (swap! state assoc :freetext %))
    }
   )
 
@@ -104,6 +102,7 @@
                :fit-width 400.0
                :preserve-ratio true
                :image (Image. (io/input-stream (first (:images @state))))}]})
+
 ;{:fx/type
   ; :image-view
   ; :fit-width 500.0
