@@ -80,7 +80,7 @@
     "This is a markdown formatted table of data you have for analysis:\n"
     (pyjama.utils/to-markdown @state)
     "\n"
-    (:question state)))
+    (:question @state)))
 
 (defmethod handle-file-action [:preview :table] [_ state]
   {:fx/type              :table-view
