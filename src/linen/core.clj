@@ -5,7 +5,6 @@
             [clojure.java.io :as io]
             [linen.handlers]
             [pyjama.components]
-            [pyjama.components]
             [pyjama.history :as h]
             [pyjama.state]
             [pyjama.fx.utils])
@@ -286,7 +285,8 @@
 (defmulti event-handler :event/type)
 
 (defmethod event-handler :default [e]
-  (prn (:event/type e) (:fx/event e) (dissoc e :fx/context :fx/event :event/type)))
+  ;(prn (:event/type e) (:fx/event e) (dissoc e :fx/context :fx/event :event/type))
+ )
 
 (defmethod event-handler ::simple [_]
   (swap! *state assoc :simple (not (:simple @*state)))
