@@ -1,1 +1,1 @@
-clj -T:build uber-linen,jpackage
+clj -T:build build-tools.core/build-all,build-tools.core/jpackage

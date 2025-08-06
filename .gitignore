@@ -626,3 +626,4 @@ origami-linen.iml
 /.clj-kondo/imports/potemkin/potemkin/config.edn
 /.clj-kondo/imports/taoensso/encore/taoensso/encore.clj
 /.clj-kondo/imports/taoensso/encore/config.edn
+/.clj-kondo/
